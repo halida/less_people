@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>少生孩子影响分析 - 交互式模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .slider-container input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            outline: none;
+        }
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #fff;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+        .person-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+        .person-icon:hover {
+            transform: scale(1.2);
+        }
+        .restaurant-seat {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2px;
+            transition: all 0.3s ease;
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="text-gray-100 p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                少生孩子影响分析
+            </h1>
+            <p class="text-gray-400 text-lg">交互式经济模拟器</p>
+        </header>
+
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-blue-400">宏观经济框架</h2>
+            <p class="text-gray-300 mb-6">财富由人创造</p>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-red-400">不能积累的财富</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center">
+                            <span class="w-2 h-2 bg-red-400 rounded-full mr-3"></span>
+                            物资 (消耗型)
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-2 h-2 bg-red-400 rounded-full mr-3"></span>
+                            服务 (即时型)
+                        </li>
+                    </ul>
+                </div>
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-xl font-semibold mb-4 text-green-400">可以积累的财富</h3>
+                    <ul class="space-y-2 text-gray-300">
+                        <li class="flex items-center">
+                            <span class="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                            基础设施
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                            科学技术
+                        </li>
+                        <li class="flex items-center">
+                            <span class="w-2 h-2 bg-green-400 rounded-full mr-3"></span>
+                            知识
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-purple-400">产能模拟器</h2>
+            <div class="glass-card rounded-xl p-6 mb-6">
+                <p class="text-gray-300 mb-4 font-mono text-lg">
+                    产能 = 人口 × 劳动生产率
+                </p>
+                <div class="grid md:grid-cols-2 gap-8 mb-6">
+                    <div class="slider-container">
+                        <label class="block text-sm font-medium mb-2 text-gray-300">
+                            人口比例: <span id="populationRatioValue" class="text-blue-400 font-bold">0.5</span>
+                        </label>
+                        <input type="range" id="populationRatio" min="0.1" max="1.0" step="0.05" value="0.5" oninput="updateSimulation()">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>10%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                    <div class="slider-container">
+                        <label class="block text-sm font-medium mb-2 text-gray-300">
+                            劳动生产率倍数: <span id="productivityMultiplierValue" class="text-purple-400 font-bold">1.5x</span>
+                        </label>
+                        <input type="range" id="productivityMultiplier" min="1.0" max="3.0" step="0.1" value="1.5" oninput="updateSimulation()">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1.0x</span>
+                            <span>3.0x</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6 mb-6">
+                <div class="glass-card rounded-xl p-6 text-center">
+                    <p class="text-sm text-gray-400 mb-2">未来产能</p>
+                    <p id="futureCapacity" class="text-4xl font-bold text-blue-400">75%</p>
+                    <p class="text-xs text-gray-500 mt-1">相对于现在</p>
+                </div>
+                <div class="glass-card rounded-xl p-6 text-center">
+                    <p class="text-sm text-gray-400 mb-2">通胀率</p>
+                    <p id="inflationRate" class="text-4xl font-bold text-red-400">33%</p>
+                    <p class="text-xs text-gray-500 mt-1">假设货币不变</p>
+                </div>
+                <div class="glass-card rounded-xl p-6 text-center">
+                    <p class="text-sm text-gray-400 mb-2">实际收入</p>
+                    <p id="realIncome" class="text-4xl font-bold text-green-400">+50%</p>
+                    <p class="text-xs text-gray-500 mt-1">劳动者平均</p>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-6">
+                <canvas id="capacityChart" height="300"></canvas>
+            </div>
+        </section>
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-yellow-400">家庭模型模拟 (4-2-1)</h2>
+            <div class="glass-card rounded-xl p-6 mb-6">
+                <p class="text-gray-300 mb-6">展示代际人口减少对家庭结构的影响</p>
+                <div class="space-y-8">
+                    <div>
+                        <p class="text-sm text-gray-400 mb-3">第一代 (祖父母): 4人</p>
+                        <div class="flex justify-center">
+                            <span class="person-icon bg-blue-600 text-white text-xs">👴</span>
+                            <span class="person-icon bg-blue-600 text-white text-xs">👵</span>
+                            <span class="person-icon bg-blue-600 text-white text-xs">👴</span>
+                            <span class="person-icon bg-blue-600 text-white text-xs">👵</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400 mb-3">第二代 (父母): 2人</p>
+                        <div class="flex justify-center">
+                            <span class="person-icon bg-purple-600 text-white text-xs">👨</span>
+                            <span class="person-icon bg-purple-600 text-white text-xs">👩</span>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-400 mb-3">第三代 (子女): 1人</p>
+                        <div class="flex justify-center">
+                            <span class="person-icon bg-green-600 text-white text-xs">👦</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 p-4 bg-yellow-900/30 rounded-lg border border-yellow-700">
+                    <p class="text-yellow-300 text-sm">⚠️ 每代人口减少50%，三代累计减少75%</p>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-red-400">不生小孩，积蓄钱</h3>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-red-400 mb-2">损失 33%</p>
+                        <p class="text-sm text-gray-400">由于通胀，购买力下降</p>
+                    </div>
+                </div>
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-gray-400">生小孩，无反馈</h3>
+                    <div class="text-center">
+                        <p class="text-3xl font-bold text-gray-400 mb-2">?</p>
+                        <p class="text-sm text-gray-400">长期社会影响未量化</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-pink-400">餐饮服务模拟</h2>
+            <div class="glass-card rounded-xl p-6 mb-6">
+                <div class="grid md:grid-cols-2 gap-8 mb-6">
+                    <div class="slider-container">
+                        <label class="block text-sm font-medium mb-2 text-gray-300">
+                            服务员数量: <span id="workerCountValue" class="text-pink-400 font-bold">3</span>人
+                        </label>
+                        <input type="range" id="workerCount" min="1" max="10" step="1" value="3" oninput="updateRestaurantSimulation()">
+                    </div>
+                    <div class="slider-container">
+                        <label class="block text-sm font-medium mb-2 text-gray-300">
+                            餐厅数量: <span[ id="restaurantCountValue" class="text-pink-400 font-bold">6</span>家
+                        </label>
+                        <input type="range" id="restaurantCount" min="2" max="20" step="1" value="6" oninput="updateRestaurantSimulation()">
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <p class="text-sm text-gray-400 mb-3">餐厅运营状况 (🟢营业 🔴关闭)</p>
+                    <div id="restaurantGrid" class="grid grid-cols-4 md:grid-cols-6 gap-3"></div>
+                </div>
+                <div class="grid md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">营业餐厅</p>
+                        <p id="openRestaurants" class="text-2xl font-bold text-green-400">3</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">关闭餐厅</p>
+                        <p id="closedRestaurants" class="text-2xl font-bold text-red-400">3</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">原菜价</p>
+                        <p class="text-2xl font-bold text-gray-400">¥30</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500 mb-1">新菜价</p>
+                        <p id="newPrice" class="text-2xl font-bold text-yellow-400">¥50</p>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-6">
+                <h3 class="text-lg font-semibold mb-4 text-gray-300">服务人员收入变化</h3>
+                <div class="flex items-center justify-between">
+                    <div class="text-center">
+                        <p class="text-sm text-gray-400 mb-1">原收入</p>
+                        <p class="text-3xl font-bold text-gray-400">¥3000</p>
+                    </div>
+                    <div class="text-4xl text-gray-600">→</div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-400 mb-1">新收入</p>
+                        <p id="newWorkerIncome" class="text-3xl font-bold text-green-400">¥5000</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm text-gray-400 mb-1">涨幅</p>
+                        <p id="incomeIncrease" class="text-3xl font-bold text-green-400">+67%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-cyan-400">区域影响分析</h2>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-red-400">小地方</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><span class="text-red-400 mr-2">↓</span><span>人口持续收缩</span></li>
+                        <li class="flex items-start"><span class="text-red-400 mr-2">↓</span><span>年轻人流失到大城市</span></li>
+                        <li class="flex items-start"><span class="text-red-400 mr-2">↓</span><span>财政收入崩溃</span></li>
+                        <li class="flex items-start"><span class="text-red-400 mr-2">↓</span><span>公共事业单位缩编</span></li>
+                        <li class="flex items-start"><span class="text-red-400 mr-2">↓</span><span>房产贬值</span></li>
+                    </ul>
+                </div>
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold mb-4 text-green-400">大城市</h3>
+                    <ul class="space-y-3 text-gray-300">
+                        <li class="flex items-start"><span class="text-green-400 mr-2">↑</span><span>人口流入加剧竞争</span></li>
+                        <li class="flex items-start"><span class="text-green-400 mr-2">↑</span><span>房价上涨</span></li>
+                        <li class="flex items-start"><span class="text-green-400 mr-2">↑</span><span>服务成本提高</span></li>
+                        <li class="flex items-start"><span class="text-green-400 mr-2">↑</span><span>生活压力增大</span></li>
+                        <li class="flex items-start"><span class="text-green-400 mr-2">↑</span><span>基础设施更完善</span></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="glass-card rounded-xl p-6 mt-6">
+                <h3 class="text-lg font-semibold mb-4 text-gray-300">整体趋势</h3>
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">收入水平</span><span class="text-green-400">上升 ↑</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full" style="width: 85%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">消费水平</span><span class="text-yellow-400">上升 ↑</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="bg-gradient-to-r from-yellow-500 to-yellow-400 h-2 rounded-full" style="width: 80%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">货币购买力</span><span class="text-red-400">下降 ↓</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="bg-gradient-to-r from-red-500 to-red-400 h-2 rounded-full" style="width: 67%"></div></div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm mb-1"><span class="text-gray-400">服务可获得性</span><span class="text-orange-400">波动 ⚡</span></div>
+                        <div class="w-full bg-gray-700 rounded-full h-2"><div class="bg-gradient-to-r from-orange-500 to-orange-400 h-2 rounded-full pulse-animation" style="width: 50%"></div></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+HT        LEOF        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-indigo-400">核心结论</h2>
+            <div class="glass-card rounded-xl p-6">
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-full flex items-center justify-center text-3xl">📈</div>
+                        <h3 class="font-semibold mb-2 text-blue-400">个人收入提升</h3>
+                        <p class="text-sm text-gray-400">劳动稀缺性推高所有劳动者收入</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-red-600 rounded-full flex items-center justify-center text-3xl">💸</div>
+                        <h3 class="font-semibold mb-2 text-red-400">通胀压力增大</h3>
+                        <p class="text-sm text-gray-400">服务供给不足导致价格持续上涨</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-purple-600 rounded-full flex items-center justify-center text-3xl">🏙️</div>
+                        <h3 class="font-semibold mb-2 text-purple-400">区域分化加剧</h3>
+                        <p class="text-sm text-gray-400">大城市与小地方发展差距扩大</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center text-gray-500 text-sm py-8">
+            <p>基于经济学理论的交互交互模拟</p>
+        </footer>
+    </div>
+
+    <script>
+        let capacityChart;
+        function initChart() {
+ {[            const ctx = document.getElementById('capacityChart').getContext('2d');
+            capacityChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['现在', '未来'],
+                    datasets: [{
+                        label: '产能',
+                        data: [100, 75],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: '人均产能',
+                        data: [100, 150],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af' } } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 200,
+                            ticks: { color: '#9ca3af', callback: v => v + '%' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#9ca3af' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        function updateSimulation() {
+            const populationRatio = parseFloat(document.getElementById('populationRatio').value);
+            const productivityMultiplier = parseFloat(document.getElementById('productivityMultiplier').value);
+            const futureCapacity = (populationRatio * productivityMultiplier * 100).toFixed(0);
+            const inflationRate = futureCapacity < 100 ? ((1 / (futureCapacity / 100) - 1) * 100).toFixed(0) : 0;
+            const realIncome = ((productivityMultiplier / populationRatio - 1) * 100).toFixed(0);
+            document.getElementById('populationRatioValue').textContent = populationRatio.toFixed(2);
+            document.getElementById('productivityMultiplierValue').textContent = productivityMultiplier.toFixed(1) + 'x';
+            document.getElementById('futureCapacity').textContent = futureCapacity + '%';
+            document.getElementById('inflationRate').textContent = inflationRate + '%';
+            document.getElementById('realIncome').textContent = (realIncome >= 0 ? '+' : '') + realIncome + '%';
+            document.getElementById('futureCapacity').className = `text-4xl font-bold ${futureCapacity < 100 ? 'text-yellow-400' : 'text-green-400'}`;
+            document.getElementById('inflationRate').className = `text-4xl font-bold ${inflationRate > 20 ? 'text-red-400' : 'text-yellow-400'}`;
+            capacityChart.data.datasets[0].data[1] = parseFloat(futureCapacity);
+            capacityChart.data.datasets[1].data[1] = (productivityMultiplier / populationRatio * 100).toFixed(0);
+            capacityChart.update();
+        }
+        function updateRestaurantSimulation() {
+            const workerCount = parseInt(document.getElementById('workerCount').value);
+            const restaurantCount = parseInt(document.getElementById('restaurantCount').value);
+            document.getElementById('workerCountValue').textContent = workerCount;
+            document.getElementById('restaurantCountValue').textContent = restaurantCount;
+            const openCount = Math.min(workerCount, restaurantCount);
+            const closedCount = restaurantCount - openCount;
+            document.getElementById('openRestaurants').textContent = openCount;
+            document.getElementById('closedRestaurants').textContent = closedCount;
+            const originalPrice = 30;
+            const priceMultiplier = openCount > 0 ? (restaurantCount / openCount) : 1;
+            const newPrice = Math.round[([originalPrice * priceMultiplier);
+            document.getElementById('newPrice').textContent = '¥' + newPrice;
+            const originalIncome = 3000;
+            const newWorkerIncome = Math.round(originalIncome * priceMultiplier);
+            const incomeIncrease = Math.round((newWorkerIncome / originalIncome - 1) * 100);
+            document.getElementById('newWorkerIncome').textContent = '¥' + newWorkerIncome;
+            document.getElementById('incomeIncrease').textContent = '+' + incomeIncrease + '%';
+            const grid = document.getElementById('restaurantGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < restaurantCount; i++) {
+                const isOpen = i < openCount;
+                const div = document.createElement('div');
+                div.className = `restaurant-seat ${isOpen ? 'bg-green-600' : 'bg-red-600'} text-white text-xs ${isOpen ? 'pulse-animation' : ''}`;
+                div.textContent = isOpen ? '🟢' : '🔴';
+                div.title = isOpen ? `餐厅 ${i + 1} - 营业中` : `餐厅 ${i + 1} - 已关闭`;
+                grid.appendChild(div);
+            }
+        }
+        window.addEventListener('load', function() {
+            initChart();
+            updateSimulation();
+            updateRestaurantSimulation();
+        });
+    </script>
+</body>
+</html>
